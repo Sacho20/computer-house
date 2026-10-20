@@ -1,15 +1,23 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { Routes, Route } from 'react-router-dom'
+import Layout from './components/Layout'
 import Home from './pages/Home'
+import Catalogo from './pages/Catalogo'
+import Servicios from './pages/Servicios'
+import Pedidos from './pages/Pedidos'
+import Cuenta from './pages/Cuenta'
+import NoEncontrada from './pages/NoEncontrada'
 
-function App() {
-
+export default function App() {
   return (
-   <Home></Home>
+    <Routes>
+      <Route element={<Layout />}>
+        <Route index element={<Home />} />
+        <Route path="catalogo" element={<Catalogo />} />
+        <Route path="servicios" element={<Servicios />} />
+        <Route path="pedidos" element={<Pedidos />} />
+        <Route path="cuenta" element={<Cuenta />} />
+        <Route path="*" element={<NoEncontrada />} />
+      </Route>
+    </Routes>
   )
 }
-
-export default App
