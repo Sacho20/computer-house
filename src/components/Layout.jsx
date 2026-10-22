@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Icono } from './Icono'
+import { useCarrito } from '../context/useCarrito'
 
 const enlaces = [
   { nombre: 'Inicio', icono: 'casa', to: '/' },
@@ -17,6 +18,27 @@ function ScrollArriba() {
     window.scrollTo(0, 0)
   }, [pathname])
   return null
+}
+
+function BotonCarrito() {
+  const { cantidadTotal } = useCarrito()
+  return (
+    <Link
+      to="/carrito"
+      aria-label={cantidadTotal > 0 ? `Ver carrito, ${cantidadTotal} artículos` : 'Ver carrito'}
+      className="relative flex size-11 items-center justify-center rounded-xl border border-line bg-white"
+    >
+      <Icono nombre="carrito" className="size-[22px]" />
+      {cantidadTotal > 0 && (
+        <span
+          aria-hidden="true"
+          className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] font-semibold text-white"
+        >
+          {cantidadTotal}
+        </span>
+      )}
+    </Link>
+  )
 }
 
 function Encabezado() {
@@ -44,13 +66,7 @@ function Encabezado() {
         ))}
       </nav>
 
-      <button
-        type="button"
-        aria-label="Ver carrito"
-        className="flex size-11 items-center justify-center rounded-xl border border-line bg-white"
-      >
-        <Icono nombre="carrito" className="size-[22px]" />
-      </button>
+      <BotonCarrito />
     </header>
   )
 }
