@@ -1,10 +1,14 @@
+// src/pages/Home.jsx
+// Contenido de la página de inicio. El encabezado y la navegación viven en Layout.
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Icono } from '../components/Icono'
 import ProductoCard from '../components/ProductoCard'
 import ServicioCard from '../components/ServicioCard'
 import Seguimiento from '../components/Seguimiento'
-import { categorias, productos, servicios, pedidosEjemplo, pasosPedido } from '../data/datos'
+import EstadoCarga from '../components/EstadoCarga'
+import { useCatalogo } from '../context/useCatalogo'
+import { pedidosEjemplo, pasosPedido } from '../data/datos'
 import { tituloSeccion, seccion } from '../components/estilos'
 
 function Buscador() {
@@ -77,28 +81,34 @@ function Portada() {
 }
 
 function Categorias() {
+  const { categorias, cargando, error, reintentar } = useCatalogo()
+
   return (
     <section className={seccion}>
       <h2 className={tituloSeccion}>Categorías</h2>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-        {categorias.map((c) => (
-          <Link
-            key={c.nombre}
-            to={`/catalogo?categoria=${encodeURIComponent(c.nombre)}`}
-            className="flex flex-col gap-3 rounded-2xl border border-line bg-white p-4 hover:border-ink md:p-5"
-          >
-            <div className="flex size-11 items-center justify-center rounded-xl bg-paper">
-              <Icono nombre={c.icono} />
-            </div>
-            <span className="text-base font-semibold">{c.nombre}</span>
-          </Link>
-        ))}
-      </div>
+      <EstadoCarga cargando={cargando} error={error} reintentar={reintentar}>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+          {categorias.map((c) => (
+            <Link
+              key={c.nombre}
+              to={`/catalogo?categoria=${encodeURIComponent(c.nombre)}`}
+              className="flex flex-col gap-3 rounded-2xl border border-line bg-white p-4 hover:border-ink md:p-5"
+            >
+              <div className="flex size-11 items-center justify-center rounded-xl bg-paper">
+                <Icono nombre={c.icono} />
+              </div>
+              <span className="text-base font-semibold">{c.nombre}</span>
+            </Link>
+          ))}
+        </div>
+      </EstadoCarga>
     </section>
   )
 }
 
 function Destacados() {
+  const { productos, cargando, error, reintentar } = useCatalogo()
+
   return (
     <section className={seccion}>
       <div className="flex items-baseline justify-between">
@@ -107,28 +117,35 @@ function Destacados() {
           Ver todo
         </Link>
       </div>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-        {productos.slice(0, 4).map((p) => (
-          <ProductoCard key={p.id} producto={p} />
-        ))}
-      </div>
+      <EstadoCarga cargando={cargando} error={error} reintentar={reintentar}>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+          {productos.slice(0, 4).map((p) => (
+            <ProductoCard key={p.id} producto={p} />
+          ))}
+        </div>
+      </EstadoCarga>
     </section>
   )
 }
 
 function ServiciosInicio() {
+  const { servicios, cargando, error, reintentar } = useCatalogo()
+
   return (
     <section className={seccion}>
       <h2 className={tituloSeccion}>Servicios técnicos</h2>
-      <div className="grid gap-3 md:grid-cols-2 md:gap-4">
-        {servicios.map((s) => (
-          <ServicioCard key={s.id} servicio={s} />
-        ))}
-      </div>
+      <EstadoCarga cargando={cargando} error={error} reintentar={reintentar}>
+        <div className="grid gap-3 md:grid-cols-2 md:gap-4">
+          {servicios.map((s) => (
+            <ServicioCard key={s.id} servicio={s} />
+          ))}
+        </div>
+      </EstadoCarga>
     </section>
   )
 }
 
+// Por ahora muestra un pedido de ejemplo; en la siguiente etapa mostrará el último pedido real.
 function SeguimientoInicio() {
   const pedido = pedidosEjemplo[0]
   return (

@@ -1,12 +1,19 @@
+// src/pages/Servicios.jsx
+// Lista de servicios y formulario para solicitar uno.
 import { useRef, useState } from 'react'
 import ServicioCard from '../components/ServicioCard'
-import { servicios } from '../data/datos'
+import EstadoCarga from '../components/EstadoCarga'
+import { useCatalogo } from '../context/useCatalogo'
 import { tituloSeccion, seccion, campo, botonAcento } from '../components/estilos'
 
 export default function Servicios() {
+  const { servicios, cargando, error, reintentar } = useCatalogo()
   const formRef = useRef(null)
-  const [tipo, setTipo] = useState(servicios[0].id)
+  const [tipo, setTipo] = useState('')
   const [enviado, setEnviado] = useState(false)
+
+  // Mientras no se elija otro, se usa el primer servicio de la lista.
+  const tipoActual = tipo || servicios[0]?.id || ''
 
   function elegir(id) {
     setTipo(id)
@@ -16,7 +23,7 @@ export default function Servicios() {
 
   function enviar(e) {
     e.preventDefault()
-    // Aquí se enviará la solicitud a la base de datos cuando la conectemos.
+    // En la siguiente etapa la solicitud se guardará en Supabase.
     setEnviado(true)
     e.target.reset()
   }
@@ -25,11 +32,13 @@ export default function Servicios() {
     <>
       <section className={seccion}>
         <h1 className={tituloSeccion}>Servicios técnicos</h1>
-        <div className="grid gap-3 md:grid-cols-2 md:gap-4">
-          {servicios.map((s) => (
-            <ServicioCard key={s.id} servicio={s} onSolicitar={elegir} />
-          ))}
-        </div>
+        <EstadoCarga cargando={cargando} error={error} reintentar={reintentar}>
+          <div className="grid gap-3 md:grid-cols-2 md:gap-4">
+            {servicios.map((s) => (
+              <ServicioCard key={s.id} servicio={s} onSolicitar={elegir} />
+            ))}
+          </div>
+        </EstadoCarga>
       </section>
 
       <section ref={formRef} className={seccion + ' scroll-mt-4 pb-6 md:pb-14'}>
@@ -42,7 +51,7 @@ export default function Servicios() {
             <label htmlFor="tipo" className="text-sm font-semibold">
               Tipo de servicio
             </label>
-            <select id="tipo" value={tipo} onChange={(e) => setTipo(e.target.value)} className={campo}>
+            <select id="tipo" value={tipoActual} onChange={(e) => setTipo(e.target.value)} className={campo}>
               {servicios.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.nombre}
@@ -84,7 +93,7 @@ export default function Servicios() {
 
           {enviado && (
             <p role="status" className="rounded-xl bg-paper p-3 text-sm">
-              Solicitud registrada. Por ahora no se guarda en ningún servidor; la conectaremos a la base de datos más adelante.
+              Solicitud registrada. Por ahora no se guarda en ningún servidor; la conectaremos en la siguiente etapa.
             </p>
           )}
         </form>

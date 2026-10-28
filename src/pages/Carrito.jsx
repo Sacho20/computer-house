@@ -1,14 +1,28 @@
+// src/pages/Carrito.jsx
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import ImagenProducto from '../components/ImagenProducto'
 import SelectorCantidad from '../components/SelectorCantidad'
+import EstadoCarga from '../components/EstadoCarga'
 import { useCarrito } from '../context/useCarrito'
+import { useCatalogo } from '../context/useCatalogo'
 import { formatoPrecio } from '../utils/formato'
 import { tituloSeccion, seccion, botonAcento } from '../components/estilos'
 
 export default function Carrito() {
   const { items, total, cantidadTotal, cambiarCantidad, quitar, vaciar } = useCarrito()
+  const { cargando, error, reintentar } = useCatalogo()
   const [aviso, setAviso] = useState(false)
+
+  // Mientras se cargan los productos no se puede saber qué hay en el carrito.
+  if (cargando || error) {
+    return (
+      <section className={seccion + ' pb-6 md:pb-14'}>
+        <h1 className={tituloSeccion}>Mi carrito</h1>
+        <EstadoCarga cargando={cargando} error={error} reintentar={reintentar} />
+      </section>
+    )
+  }
 
   if (items.length === 0) {
     return (
@@ -78,7 +92,7 @@ export default function Carrito() {
           </button>
           {aviso && (
             <p role="status" className="rounded-xl bg-paper p-3 text-sm">
-              El pago todavía no está conectado. Lo haremos en una etapa posterior.
+              El pedido y el pago se conectarán en la siguiente etapa.
             </p>
           )}
           <button type="button" onClick={vaciar} className="h-11 text-sm font-semibold text-muted">

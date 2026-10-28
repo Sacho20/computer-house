@@ -10,7 +10,21 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      workbox: { globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg}'] },
+      workbox: { globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg}'],
+        runtimeCaching: [
+  {
+    urlPattern: ({ url }) =>
+      url.hostname.endsWith('.supabase.co') &&
+      /^\/rest\/v1\/(productos|categorias|servicios)/.test(url.pathname),
+    handler: 'NetworkFirst',
+    options: {
+      cacheName: 'catalogo',
+      networkTimeoutSeconds: 4,
+      expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 7 },
+    },
+  },
+],
+       },
       registerType: 'autoUpdate',
       devOptions: { enabled: true },
       manifest: {
