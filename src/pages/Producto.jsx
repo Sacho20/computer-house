@@ -1,15 +1,18 @@
+// src/pages/Producto.jsx
+// Detalle de un producto: /producto/3
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import ImagenProducto from '../components/ImagenProducto'
 import BotonAgregar from '../components/BotonAgregar'
 import SelectorCantidad from '../components/SelectorCantidad'
 import ProductoCard from '../components/ProductoCard'
-import { productos } from '../data/datos'
+import EstadoCarga from '../components/EstadoCarga'
+import { useCatalogo } from '../context/useCatalogo'
 import { formatoPrecio } from '../utils/formato'
 import { tituloSeccion, seccion } from '../components/estilos'
 import NoEncontrada from './NoEncontrada'
 
-function Detalle({ producto }) {
+function Detalle({ producto, productos }) {
   const [cantidad, setCantidad] = useState(1)
   const relacionados = productos
     .filter((p) => p.categoria === producto.categoria && p.id !== producto.id)
@@ -83,9 +86,19 @@ function Detalle({ producto }) {
 
 export default function Producto() {
   const { id } = useParams()
-  const producto = productos.find((p) => String(p.id) === id)
+  const { productos, cargando, error, reintentar } = useCatalogo()
 
+  if (cargando || error) {
+    return (
+      <section className={seccion + ' pb-6 md:pb-14'}>
+        <EstadoCarga cargando={cargando} error={error} reintentar={reintentar} />
+      </section>
+    )
+  }
+
+  const producto = productos.find((p) => String(p.id) === id)
   if (!producto) return <NoEncontrada />
+
   // key: al pasar de un producto a otro, se reinicia la cantidad y la imagen.
-  return <Detalle key={producto.id} producto={producto} />
+  return <Detalle key={producto.id} producto={producto} productos={productos} />
 }

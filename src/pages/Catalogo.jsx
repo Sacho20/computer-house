@@ -1,10 +1,15 @@
+// src/pages/Catalogo.jsx
+// Catálogo completo con filtro por categoría y búsqueda. Los filtros viven en la URL:
+// /catalogo?categoria=Laptops&q=asus
 import { useSearchParams } from 'react-router-dom'
 import { Icono } from '../components/Icono'
 import ProductoCard from '../components/ProductoCard'
-import { categorias, productos } from '../data/datos'
+import EstadoCarga from '../components/EstadoCarga'
+import { useCatalogo } from '../context/useCatalogo'
 import { tituloSeccion, seccion } from '../components/estilos'
 
 export default function Catalogo() {
+  const { productos, categorias, cargando, error, reintentar } = useCatalogo()
   const [params, setParams] = useSearchParams()
   const categoria = params.get('categoria') || 'Todos'
   const q = params.get('q') || ''
@@ -61,21 +66,23 @@ export default function Catalogo() {
         })}
       </div>
 
-      <p className="text-sm text-muted">
-        {visibles.length} {visibles.length === 1 ? 'producto' : 'productos'}
-      </p>
-
-      {visibles.length === 0 ? (
-        <p className="rounded-2xl border border-line bg-white p-6 text-center text-muted">
-          No encontramos productos con esos filtros.
+      <EstadoCarga cargando={cargando} error={error} reintentar={reintentar}>
+        <p className="text-sm text-muted">
+          {visibles.length} {visibles.length === 1 ? 'producto' : 'productos'}
         </p>
-      ) : (
-        <div className="grid grid-cols-2 gap-3 pb-6 md:grid-cols-4 md:gap-4 md:pb-14">
-          {visibles.map((p) => (
-            <ProductoCard key={p.id} producto={p} />
-          ))}
-        </div>
-      )}
+
+        {visibles.length === 0 ? (
+          <p className="rounded-2xl border border-line bg-white p-6 text-center text-muted">
+            No encontramos productos con esos filtros.
+          </p>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 pb-6 md:grid-cols-4 md:gap-4 md:pb-14">
+            {visibles.map((p) => (
+              <ProductoCard key={p.id} producto={p} />
+            ))}
+          </div>
+        )}
+      </EstadoCarga>
     </section>
   )
 }

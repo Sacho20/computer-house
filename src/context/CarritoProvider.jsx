@@ -1,6 +1,9 @@
+// src/context/CarritoProvider.jsx
+// Guarda el carrito en el dispositivo (localStorage), así no se pierde al recargar.
+// Solo guarda { id, cantidad }; los datos del producto salen del catálogo (Supabase).
 import { useEffect, useMemo, useState } from 'react'
 import { CarritoContext } from './carrito'
-import { productos } from '../data/datos'
+import { useCatalogo } from './useCatalogo'
 
 const CLAVE = 'carrito'
 const MAXIMO = 99
@@ -9,16 +12,15 @@ function leerGuardado() {
   try {
     const datos = JSON.parse(localStorage.getItem(CLAVE))
     if (!Array.isArray(datos)) return []
-    // Descarta líneas dañadas o de productos que ya no existen.
-    return datos.filter(
-      (l) => l && Number.isInteger(l.cantidad) && l.cantidad > 0 && productos.some((p) => p.id === l.id),
-    )
+    // Descarta líneas dañadas.
+    return datos.filter((l) => l && Number.isInteger(l.id) && Number.isInteger(l.cantidad) && l.cantidad > 0)
   } catch {
     return []
   }
 }
 
 export function CarritoProvider({ children }) {
+  const { productos } = useCatalogo()
   const [lineas, setLineas] = useState(leerGuardado)
 
   useEffect(() => {
@@ -30,15 +32,15 @@ export function CarritoProvider({ children }) {
   }, [lineas])
 
   const valor = useMemo(() => {
-    const items = lineas.map((l) => ({
-      producto: productos.find((p) => p.id === l.id),
-      cantidad: l.cantidad,
-    }))
+    // Une cada línea con su producto; ignora los productos que ya no existen en la tienda.
+    const items = lineas
+      .map((l) => ({ producto: productos.find((p) => p.id === l.id), cantidad: l.cantidad }))
+      .filter((i) => i.producto)
 
     return {
       items,
       cantidadTotal: items.reduce((suma, i) => suma + i.cantidad, 0),
-      total: items.reduce((suma, i) => suma + i.producto.precio * i.cantidad, 0),
+      total: items.reduce((suma, i) => suma + Number(i.producto.precio) * i.cantidad, 0),
 
       agregar: (id, cantidad = 1) =>
         setLineas((actual) => {
@@ -58,7 +60,7 @@ export function CarritoProvider({ children }) {
 
       vaciar: () => setLineas([]),
     }
-  }, [lineas])
+  }, [lineas, productos])
 
   return <CarritoContext.Provider value={valor}>{children}</CarritoContext.Provider>
 }
