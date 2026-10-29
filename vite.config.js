@@ -25,7 +25,7 @@ export default defineConfig({
   },
 ],
        },
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       devOptions: { enabled: true },
       manifest: {
         name: 'Tienda de Cómputo Computer House',

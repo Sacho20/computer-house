@@ -8,7 +8,9 @@ import ServicioCard from '../components/ServicioCard'
 import Seguimiento from '../components/Seguimiento'
 import EstadoCarga from '../components/EstadoCarga'
 import { useCatalogo } from '../context/useCatalogo'
-import { pedidosEjemplo, pasosPedido } from '../data/datos'
+import { useAuth } from '../context/useAuth'
+import { usePedidos } from '../hooks/usePedidos'
+import { pasosPedido } from '../data/datos'
 import { tituloSeccion, seccion } from '../components/estilos'
 
 function Buscador() {
@@ -145,9 +147,36 @@ function ServiciosInicio() {
   )
 }
 
-// Por ahora muestra un pedido de ejemplo; en la siguiente etapa mostrará el último pedido real.
+// Muestra el último pedido de la persona con sesión iniciada.
+function UltimoPedido() {
+  const { pedidos, cargando, error, recargar } = usePedidos()
+  const pedido = pedidos[0]
+
+  return (
+    <EstadoCarga cargando={cargando} error={error} reintentar={recargar}>
+      {pedido ? (
+        <div className="flex flex-col gap-[18px] rounded-2xl border border-line bg-white p-[18px] md:max-w-3xl md:p-6">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold">Pedido #{pedido.id}</span>
+            <span className="text-[13px] text-muted">{pedido.estado}</span>
+          </div>
+          <Seguimiento paso={Math.max(0, pasosPedido.indexOf(pedido.estado))} />
+        </div>
+      ) : (
+        <div className="flex flex-col items-start gap-2 rounded-2xl border border-line bg-white p-[18px] md:max-w-3xl md:p-6">
+          <p className="text-muted">Todavía no tienes pedidos.</p>
+          <Link to="/catalogo" className="text-sm font-semibold text-accent">
+            Ver catálogo
+          </Link>
+        </div>
+      )}
+    </EstadoCarga>
+  )
+}
+
 function SeguimientoInicio() {
-  const pedido = pedidosEjemplo[0]
+  const { usuario, cargando } = useAuth()
+
   return (
     <section className={seccion + ' pb-6 md:pb-14'}>
       <div className="flex items-baseline justify-between">
@@ -156,13 +185,21 @@ function SeguimientoInicio() {
           Ver mis pedidos
         </Link>
       </div>
-      <div className="flex flex-col gap-[18px] rounded-2xl border border-line bg-white p-[18px] md:max-w-3xl md:p-6">
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-semibold">Pedido #{pedido.id}</span>
-          <span className="text-[13px] text-muted">{pasosPedido[pedido.paso]}</span>
+
+      {cargando ? (
+        <p role="status" className="text-muted">
+          Cargando…
+        </p>
+      ) : usuario ? (
+        <UltimoPedido />
+      ) : (
+        <div className="flex flex-col items-start gap-2 rounded-2xl border border-line bg-white p-[18px] md:max-w-3xl md:p-6">
+          <p className="text-muted">Inicia sesión para ver el estado de tus pedidos.</p>
+          <Link to="/cuenta" className="text-sm font-semibold text-accent">
+            Iniciar sesión
+          </Link>
         </div>
-        <Seguimiento paso={pedido.paso} />
-      </div>
+      )}
     </section>
   )
 }
