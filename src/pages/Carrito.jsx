@@ -1,18 +1,42 @@
 // src/pages/Carrito.jsx
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import ImagenProducto from '../components/ImagenProducto'
 import SelectorCantidad from '../components/SelectorCantidad'
 import EstadoCarga from '../components/EstadoCarga'
 import { useCarrito } from '../context/useCarrito'
 import { useCatalogo } from '../context/useCatalogo'
+import { useAuth } from '../context/useAuth'
+import { supabase } from '../lib/supabase'
 import { formatoPrecio } from '../utils/formato'
 import { tituloSeccion, seccion, botonAcento } from '../components/estilos'
 
 export default function Carrito() {
   const { items, total, cantidadTotal, cambiarCantidad, quitar, vaciar } = useCarrito()
   const { cargando, error, reintentar } = useCatalogo()
-  const [aviso, setAviso] = useState(false)
+  const { usuario, cargando: cargandoSesion } = useAuth()
+  const navigate = useNavigate()
+  const [enviando, setEnviando] = useState(false)
+  const [errorPedido, setErrorPedido] = useState(null)
+
+  async function realizarPedido() {
+    setEnviando(true)
+    setErrorPedido(null)
+
+    // La base de datos calcula los precios y el total; aquí solo se manda qué y cuántos.
+    const { error: fallo } = await supabase.rpc('crear_pedido', {
+      p_items: items.map(({ producto, cantidad }) => ({ producto_id: producto.id, cantidad })),
+    })
+
+    if (fallo) {
+      setErrorPedido('No se pudo crear el pedido. Revisa tu conexión e inténtalo de nuevo.')
+      setEnviando(false)
+      return
+    }
+
+    vaciar()
+    navigate('/pedidos')
+  }
 
   // Mientras se cargan los productos no se puede saber qué hay en el carrito.
   if (cargando || error) {
@@ -31,6 +55,9 @@ export default function Carrito() {
         <p className="text-muted">Tu carrito está vacío.</p>
         <Link to="/catalogo" className={botonAcento}>
           Ver catálogo
+        </Link>
+        <Link to="/pedidos" className="text-sm font-semibold text-accent">
+          Ver mis pedidos
         </Link>
       </section>
     )
@@ -87,14 +114,36 @@ export default function Carrito() {
             <span className="font-semibold">Total</span>
             <span className="font-display text-2xl font-bold">{formatoPrecio(total)}</span>
           </div>
-          <button type="button" onClick={() => setAviso(true)} className={botonAcento}>
-            Continuar con la compra
-          </button>
-          {aviso && (
-            <p role="status" className="rounded-xl bg-paper p-3 text-sm">
-              El pedido y el pago se conectarán en la siguiente etapa.
+
+          {cargandoSesion ? (
+            <p role="status" className="text-sm text-muted">
+              Cargando…
+            </p>
+          ) : usuario ? (
+            <button
+              type="button"
+              onClick={realizarPedido}
+              disabled={enviando}
+              className={botonAcento + ' disabled:opacity-60'}
+            >
+              {enviando ? 'Enviando pedido…' : 'Realizar pedido'}
+            </button>
+          ) : (
+            <Link to="/cuenta" className={botonAcento}>
+              Inicia sesión para pedir
+            </Link>
+          )}
+
+          {errorPedido && (
+            <p role="alert" className="rounded-xl bg-[#FBE9E4] p-3 text-sm text-[#8A2B0C]">
+              {errorPedido}
             </p>
           )}
+
+          <p className="text-xs text-muted">
+            Por ahora el pedido se registra sin pago en línea. Te mostramos su estado en “Mis pedidos”.
+          </p>
+
           <button type="button" onClick={vaciar} className="h-11 text-sm font-semibold text-muted">
             Vaciar carrito
           </button>

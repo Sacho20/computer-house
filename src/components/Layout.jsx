@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Icono } from './Icono'
 import { useCarrito } from '../context/useCarrito'
+import AvisosPWA from './AvisosPWA'
 
 const enlaces = [
   { nombre: 'Inicio', icono: 'casa', to: '/' },
@@ -107,6 +108,7 @@ export default function Layout() {
         </main>
       </div>
       <BarraInferior />
+      <AvisosPWA />
     </div>
   )
 }
