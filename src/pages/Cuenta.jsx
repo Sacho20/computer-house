@@ -3,16 +3,22 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/useAuth'
+import { useEsAdmin } from '../hooks/useEsAdmin'
+import BotonNotificaciones from '../components/BotonNotificaciones'
+import { desactivarPush } from '../lib/push'
 import { traducirError } from '../lib/errores'
 import { tituloSeccion, seccion, campo, botonAcento } from '../components/estilos'
 
 function Perfil() {
   const { usuario, salir } = useAuth()
+  const { esAdmin } = useEsAdmin()
   const [saliendo, setSaliendo] = useState(false)
   const nombre = usuario.user_metadata?.nombre
 
   async function cerrarSesion() {
     setSaliendo(true)
+    // Antes de cerrar sesión, este dispositivo deja de recibir los avisos de esta cuenta.
+    await desactivarPush()
     await salir()
     setSaliendo(false)
   }
@@ -25,9 +31,17 @@ function Perfil() {
         <span className="break-all text-[15px]">{usuario.email}</span>
       </div>
 
+      <BotonNotificaciones />
+
       <Link to="/pedidos" className="text-sm font-semibold text-accent">
         Ver mis pedidos
       </Link>
+
+      {esAdmin && (
+        <Link to="/admin" className="flex h-12 items-center justify-center rounded-xl bg-ink text-[15px] font-semibold text-white">
+          Panel de administración
+        </Link>
+      )}
 
       <button
         type="button"

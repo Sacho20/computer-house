@@ -64,10 +64,13 @@ export default function AvisosPWA() {
       className="pointer-events-none fixed inset-x-0 bottom-[84px] z-50 flex flex-col gap-2 px-4 md:bottom-4 md:left-auto md:right-4 md:w-96 md:px-0"
     >
       {!enLinea && (
-        <p role="status" className={tarjeta + ' bg-ink text-white'}>
-          Sin conexión. Verás lo último que se guardó en este dispositivo.
-        </p>
-      )}
+  <p
+    role="status"
+    className="pointer-events-auto flex items-center justify-between gap-3 rounded-2xl bg-ink p-3.5 text-sm text-white shadow-lg"
+  >
+    Sin conexión. Verás lo último que se guardó en este dispositivo.
+  </p>
+)}
 
       {hayVersionNueva && (
         <div role="status" className={tarjeta}>
