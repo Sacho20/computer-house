@@ -10,7 +10,8 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      workbox: { globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg}'],
+      workbox: { importScripts: ['push-sw.js'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg}'],
         runtimeCaching: [
   {
     urlPattern: ({ url }) =>

@@ -16,7 +16,7 @@ export default function ServicioCard({ servicio, onSolicitar }) {
       </div>
       <p className="text-sm leading-snug text-muted md:grow md:text-base">{servicio.descripcion}</p>
       <div className="flex items-center justify-between gap-3">
-        <span className="text-sm text-muted">Desde $ [PRECIO]</span>
+        <span className="text-sm text-muted">Desde $1500</span>
         {onSolicitar ? (
           <button type="button" onClick={() => onSolicitar(servicio.id)} className={claseBoton}>
             Solicitar
