@@ -13,6 +13,18 @@ function fechaCorta(iso) {
   return new Date(iso).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
+const DIGITOS_TELEFONO = 10
+
+// Mientras la persona escribe (o pega), deja solo números y recorta a 10 dígitos.
+// Así "55 1234 5678" o "+52 (55) 1234-5678" quedan como dígitos sin espacios ni símbolos.
+// Si se pega un número con la clave de México (52 o 521) delante, se quita.
+function soloNumeros(e) {
+  let digitos = e.currentTarget.value.replace(/\D/g, '')
+  if (digitos.length === 13 && digitos.startsWith('521')) digitos = digitos.slice(3)
+  else if (digitos.length === 12 && digitos.startsWith('52')) digitos = digitos.slice(2)
+  e.currentTarget.value = digitos.slice(0, DIGITOS_TELEFONO)
+}
+
 function MisSolicitudes({ lista, servicios }) {
   const nombreServicio = (id) => servicios.find((s) => s.id === id)?.nombre ?? id
 
@@ -121,6 +133,12 @@ export default function Servicios() {
       return
     }
 
+    // Respaldo de la validación del navegador.
+    if (!/^\d{10}$/.test(telefono)) {
+      setMensaje({ tipo: 'error', texto: 'El teléfono debe tener 10 dígitos, solo números.' })
+      return
+    }
+
     setEnviando(true)
     setMensaje(null)
 
@@ -212,11 +230,18 @@ export default function Servicios() {
                 id="telefono"
                 name="telefono"
                 type="tel"
-                autoComplete="tel"
+                inputMode="numeric"
+                autoComplete="tel-national"
                 required
-                maxLength={30}
+                pattern="[0-9]{10}"
+                title="Escribe 10 dígitos, solo números"
+                onInput={soloNumeros}
+                aria-describedby="ayuda-telefono"
                 className={campo}
               />
+              <span id="ayuda-telefono" className="text-xs text-muted">
+                10 dígitos, solo números.
+              </span>
             </div>
 
             <div className="flex flex-col gap-1.5">
